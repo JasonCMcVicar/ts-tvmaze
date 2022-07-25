@@ -8,6 +8,20 @@ const $searchForm = $("#searchForm");
 const BASE_URL = "https://api.tvmaze.com";
 const NO_IMG_URL = "https://tinyurl.com/tv-missing";
 
+interface IShowFromApi {
+  "id": number,
+  "name": string,
+  "summary": string,
+  "image": {medium: string} | null
+}
+
+interface IShow {
+  "id": number,
+  "name": string,
+  "summary": string,
+  "image": string
+}
+
 
 /** Given a search term, search for tv shows that match that query.
  *
@@ -15,10 +29,10 @@ const NO_IMG_URL = "https://tinyurl.com/tv-missing";
  *    Each show object should contain exactly: {id, name, summary, image}
  *    (if no image URL given by API, put in a default image URL)
  */
-async function getShowsByTerm(term): Promise<Array<Object>> {
+async function getShowsByTerm(term: string): Promise<IShow[]> {
   const response = await axios.get(`${BASE_URL}/search/shows`,
     { params: { "q": term } });
-  return response.data.map(showAndScore => {
+  return response.data.map((showAndScore: {show: IShowFromApi}) => {
     const show = showAndScore.show;
     let image = show.image !== null ? show.image.medium : NO_IMG_URL;
     return {
