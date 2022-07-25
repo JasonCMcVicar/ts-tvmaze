@@ -12781,7 +12781,7 @@ function getShowsByTerm(term) {
         });
     });
 }
-/** Given list of shows, create markup for each and to DOM */
+/** Given list of shows, create markup for each and add to DOM */
 function populateShows(shows) {
     $showsList.empty();
     for (var _i = 0, shows_1 = shows; _i < shows_1.length; _i++) {
@@ -12836,14 +12836,14 @@ function getEpisodesOfShow(id) {
                 case 0: return [4 /*yield*/, axios_1.default.get("".concat(BASE_URL, "/shows/").concat(id, "/episodes"))];
                 case 1:
                     response = _a.sent();
-                    return [2 /*return*/, response.data.map(episode, function (Record) {
+                    return [2 /*return*/, response.data.map((function (episode) {
                             return {
                                 "id": episode.id,
                                 "name": episode.name,
                                 "season": episode.season,
                                 "number": episode.number
                             };
-                        })];
+                        }))];
             }
         });
     });

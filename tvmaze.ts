@@ -12,14 +12,21 @@ interface IShowFromApi {
   "id": number,
   "name": string,
   "summary": string,
-  "image": {medium: string} | null
+  "image": { medium: string; } | null,
 }
 
 interface IShow {
   "id": number,
   "name": string,
   "summary": string,
-  "image": string
+  "image": string,
+}
+
+interface IEpisode {
+  "id": number,
+  "name": string,
+  "season": number,
+  "number": number,
 }
 
 
@@ -32,7 +39,8 @@ interface IShow {
 async function getShowsByTerm(term: string): Promise<IShow[]> {
   const response = await axios.get(`${BASE_URL}/search/shows`,
     { params: { "q": term } });
-  return response.data.map((showAndScore: {show: IShowFromApi}) => {
+
+  return response.data.map((showAndScore: { show: IShowFromApi; }) => {
     const show = showAndScore.show;
     let image = show.image !== null ? show.image.medium : NO_IMG_URL;
     return {
@@ -45,9 +53,9 @@ async function getShowsByTerm(term: string): Promise<IShow[]> {
 }
 
 
-/** Given list of shows, create markup for each and to DOM */
+/** Given list of shows, create markup for each and add to DOM */
 
-function populateShows(shows: Array<Object>) {
+function populateShows(shows: IShow[]): void {
   $showsList.empty();
 
   for (let show of shows) {
@@ -79,8 +87,8 @@ function populateShows(shows: Array<Object>) {
  *    Hide episodes area (that only gets shown if they ask for episodes)
  */
 
-async function searchForShowAndDisplay() {
-  const term = $("#searchForm-term").val();
+async function searchForShowAndDisplay(): Promise<void> {
+  const term = $("#searchForm-term").val() as string;
   const shows = await getShowsByTerm(term);
 
   $episodesArea.hide();
@@ -96,22 +104,23 @@ $searchForm.on("submit", async function (evt: JQuery.SubmitEvent) {
 /** Given a show ID, get from API and return (promise) array of episodes:
  *      { id, name, season, number }
  */
-async function getEpisodesOfShow(id: number) {
-  const response = await axios.get(`${BASE_URL}/shows/${id}/episodes`);
-  return response.data.map(episode: Record => {
+async function getEpisodesOfShow(id: number): Promise<IEpisode[]> {
+  const response: { data: IEpisode[]; } = await axios.get(`${BASE_URL}/shows/${id}/episodes`);
+  return response.data.map((episode => {
     return {
       "id": episode.id,
       "name": episode.name,
       "season": episode.season,
       "number": episode.number
     };
-  });
+  })
+  );
 }
 
 /** Takes an array of episodes and adds them to episode area
  * in and unordered lists */
 
-function populateEpisodes(episodes: Array<Record<string, number>>) {
+function populateEpisodes(episodes: IEpisode[]): void {
   $episodeList.empty();
   for (let episode of episodes) {
     const $episode = $(
@@ -126,7 +135,7 @@ function populateEpisodes(episodes: Array<Record<string, number>>) {
 /**uses get episode function and populate episode function
  * to get a show ID and display the episode on the bottom of the page
  */
- async function searchForEpisodesAndDisplay(id) {
+async function searchForEpisodesAndDisplay(id: number): Promise<void> {
   const episodes = await getEpisodesOfShow(id);
   $episodesArea.show();
   populateEpisodes(episodes);
@@ -135,7 +144,7 @@ function populateEpisodes(episodes: Array<Record<string, number>>) {
 /** adds on to all episode buttons in show area, grabs show id from
  * target show and executes searchForEpisodesAndDisplay func */
 
-$showsList.on('click', '.Show-getEpisodes', async function (evt) {
+$showsList.on('click', '.Show-getEpisodes', async function (evt: JQuery.ClickEvent) {
   const showID = $(evt.target).closest('.Show').attr('data-show-id');
   await searchForEpisodesAndDisplay(Number(showID));
 });
