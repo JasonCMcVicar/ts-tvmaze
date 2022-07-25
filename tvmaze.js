@@ -12749,6 +12749,7 @@ var axios_1 = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
 var $showsList = $("#showsList");
 var $episodesArea = $("#episodesArea");
+var $episodeList = $('#episodesList');
 var $searchForm = $("#searchForm");
 var BASE_URL = "https://api.tvmaze.com";
 var NO_IMG_URL = "https://tinyurl.com/tv-missing";
@@ -12758,7 +12759,6 @@ var NO_IMG_URL = "https://tinyurl.com/tv-missing";
  *    Each show object should contain exactly: {id, name, summary, image}
  *    (if no image URL given by API, put in a default image URL)
  */
-// ADD: Remove placeholder & make request to TVMaze search shows API.
 function getShowsByTerm(term) {
     return __awaiter(this, void 0, void 0, function () {
         var response;
@@ -12828,9 +12828,71 @@ $searchForm.on("submit", function (evt) {
 /** Given a show ID, get from API and return (promise) array of episodes:
  *      { id, name, season, number }
  */
-// async function getEpisodesOfShow(id) { }
-/** Write a clear docstring for this function... */
-// function populateEpisodes(episodes) { }
+function getEpisodesOfShow(id) {
+    return __awaiter(this, void 0, void 0, function () {
+        var response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, axios_1.default.get("".concat(BASE_URL, "/shows/").concat(id, "/episodes"))];
+                case 1:
+                    response = _a.sent();
+                    return [2 /*return*/, response.data.map(episode, function (Record) {
+                            return {
+                                "id": episode.id,
+                                "name": episode.name,
+                                "season": episode.season,
+                                "number": episode.number
+                            };
+                        })];
+            }
+        });
+    });
+}
+/** Takes an array of episodes and adds them to episode area
+ * in and unordered lists */
+function populateEpisodes(episodes) {
+    $episodeList.empty();
+    for (var _i = 0, episodes_1 = episodes; _i < episodes_1.length; _i++) {
+        var episode = episodes_1[_i];
+        var $episode = $("<li data-episode-id=".concat(episode.id, ">\n        ").concat(episode.name, " (season ").concat(episode.season, ", episode ").concat(episode.number, ")\n      </li>"));
+        $episodeList.append($episode);
+    }
+}
+/**uses get episode function and populate episode function
+ * to get a show ID and display the episode on the bottom of the page
+ */
+function searchForEpisodesAndDisplay(id) {
+    return __awaiter(this, void 0, void 0, function () {
+        var episodes;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, getEpisodesOfShow(id)];
+                case 1:
+                    episodes = _a.sent();
+                    $episodesArea.show();
+                    populateEpisodes(episodes);
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+/** adds on to all episode buttons in show area, grabs show id from
+ * target show and executes searchForEpisodesAndDisplay func */
+$showsList.on('click', '.Show-getEpisodes', function (evt) {
+    return __awaiter(this, void 0, void 0, function () {
+        var showID;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    showID = $(evt.target).closest('.Show').attr('data-show-id');
+                    return [4 /*yield*/, searchForEpisodesAndDisplay(Number(showID))];
+                case 1:
+                    _a.sent();
+                    return [2 /*return*/];
+            }
+        });
+    });
+});
 // return [
 //   {
 //     id: 1767,
